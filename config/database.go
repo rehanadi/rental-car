@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -14,11 +15,11 @@ var DB *gorm.DB
 
 func InitDB() {
 	// if supabase database not connected please use local database
-	dbuser := "postgres"
-	dbpass := "12345"
-	dbhost := "localhost"
-	dbname := "rental-car"
-	dbport := "5432"
+	dbuser := os.Getenv("DB_USER")
+	dbpass := os.Getenv("DB_PASS")
+	dbhost := os.Getenv("DB_HOST")
+	dbname := os.Getenv("DB_NAME")
+	dbport := os.Getenv("DB_PORT")
 	/*
 		dbuser := "postgres.rwxyxvcywxpoqiovconl"
 		dbpass := "livecode3-phase2-v2"
