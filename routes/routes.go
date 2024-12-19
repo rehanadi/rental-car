@@ -24,5 +24,5 @@ func Init(e *echo.Echo) {
 
 	p := e.Group("/payments")
 	p.POST("/top-up", m.Authentication(paymentController.TopUpDeposit))
-	p.GET("/verify/:id", m.Authentication(paymentController.VerifyPayment))
+	p.GET("/verify/:id", paymentController.VerifyPayment)
 }
