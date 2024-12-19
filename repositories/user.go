@@ -20,6 +20,7 @@ var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 type UserRepository interface {
 	Register(user *models.RegisterRequest) (*models.RegisterResponse, int, error)
 	Login(user *models.LoginRequest) (interface{}, int, error)
+	GetUserProfile(userId int) (*models.UserProfile, int, error)
 }
 
 type userRepository struct {
@@ -141,4 +142,22 @@ func (r *userRepository) Login(user *models.LoginRequest) (interface{}, int, err
 	}
 
 	return tokenString, http.StatusOK, nil
+}
+
+func (r *userRepository) GetUserProfile(userId int) (*models.UserProfile, int, error) {
+	// check if user exists
+	var user models.User
+	if err := r.DB.Where("user_id = ?", userId).
+		First(&user).Error; err != nil {
+		return nil, http.StatusNotFound, errors.New("user not found")
+	}
+
+	// return response
+	response := models.UserProfile{
+		Name:          user.Name,
+		Email:         user.Email,
+		DepositAmount: user.DepositAmount,
+	}
+
+	return &response, http.StatusOK, nil
 }

@@ -38,3 +38,14 @@ func (uc *UserController) Login(c echo.Context) error {
 
 	return c.JSON(statusCode, map[string]any{"message": "success login", "token": token})
 }
+
+func (uc *UserController) GetUserProfile(c echo.Context) error {
+	userId := c.Get("user_id").(int)
+
+	user, statusCode, err := uc.UserRepository.GetUserProfile(userId)
+	if err != nil {
+		return c.JSON(statusCode, map[string]string{"message": err.Error()})
+	}
+
+	return c.JSON(statusCode, map[string]any{"message": "success get user profile", "user": user})
+}

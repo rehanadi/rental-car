@@ -17,6 +17,7 @@ func Init(e *echo.Echo) {
 	u := e.Group("/users")
 	u.POST("/register", userController.Register)
 	u.POST("/login", userController.Login)
+	u.GET("/me", m.Authentication(userController.GetUserProfile))
 
 	// payment routes
 	paymentRepository := repositories.NewPaymentRepository(config.DB)
