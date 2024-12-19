@@ -15,7 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var jwtSecret = []byte("secret")
+var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 type UserRepository interface {
 	Register(user *models.RegisterRequest) (*models.RegisterResponse, int, error)
