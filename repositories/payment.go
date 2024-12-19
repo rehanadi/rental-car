@@ -3,7 +3,10 @@ package repositories
 import (
 	"errors"
 	"net/http"
+	"os"
+	"rental-car/helpers"
 	"rental-car/models"
+	"strconv"
 	"time"
 
 	"gorm.io/gorm"
@@ -23,6 +26,13 @@ func NewPaymentRepository(DB *gorm.DB) *paymentRepository {
 }
 
 func (r *paymentRepository) TopUpDeposit(newPayment *models.TopUpDepositRequest) (*models.TopUpDepositResponse, int, error) {
+	// check if user exists
+	var user models.User
+	if err := r.DB.Where("user_id = ?", newPayment.UserId).
+		First(&user).Error; err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
 	// insert into payments
 	payment := models.Payment{
 		UserId:        newPayment.UserId,
@@ -38,6 +48,26 @@ func (r *paymentRepository) TopUpDeposit(newPayment *models.TopUpDepositRequest)
 		return nil, http.StatusInternalServerError, result.Error
 	}
 
+	// create invoice
+	baseURL := os.Getenv("BASE_URL")
+	invoice := models.CreateInvoiceRequest{
+		ExternalId:         strconv.Itoa(payment.PaymentId),
+		Amount:             payment.Amount,
+		Description:        "Top up deposit",
+		InvoiceDuration:    86400,
+		GivenNames:         user.Name,
+		Email:              user.Email,
+		Currency:           "IDR",
+		PaymentMethod:      payment.PaymentMethod,
+		SuccessRedirectURL: baseURL + "/payments/verify/" + strconv.Itoa(payment.PaymentId) + "?status=success",
+		FailureRedirectURL: baseURL + "/payments/verify/" + strconv.Itoa(payment.PaymentId) + "?status=failed",
+	}
+
+	resInvoice, statusCode, err := helpers.CreateInvoice(invoice)
+	if err != nil {
+		return nil, statusCode, err
+	}
+
 	// return response
 	response := models.TopUpDepositResponse{
 		PaymentId:     payment.PaymentId,
@@ -46,7 +76,7 @@ func (r *paymentRepository) TopUpDeposit(newPayment *models.TopUpDepositRequest)
 		PaymentMethod: payment.PaymentMethod,
 		Status:        payment.Status,
 		CreatedAt:     payment.CreatedAt,
-		RedirectURL:   "https://payment-gateway.com/",
+		RedirectURL:   resInvoice.InvoiceURL,
 	}
 
 	return &response, http.StatusCreated, nil
