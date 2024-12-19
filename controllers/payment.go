@@ -33,7 +33,7 @@ func (pc *PaymentController) TopUpDeposit(c echo.Context) error {
 		return c.JSON(statusCode, map[string]string{"message": err.Error()})
 	}
 
-	return c.JSON(statusCode, map[string]any{"message": "please open redirect url to pay your top up", "payment": response})
+	return c.JSON(statusCode, map[string]any{"message": "please open redirect url to complete top up payment", "payment": response})
 }
 
 func (pc *PaymentController) VerifyPayment(c echo.Context) error {
@@ -54,5 +54,9 @@ func (pc *PaymentController) VerifyPayment(c echo.Context) error {
 		return c.JSON(statusCode, map[string]string{"message": err.Error()})
 	}
 
-	return c.JSON(statusCode, map[string]string{"message": "success verify payment"})
+	if status == "failed" {
+		return c.JSON(statusCode, map[string]string{"message": "fail top up deposit"})
+	}
+
+	return c.JSON(statusCode, map[string]string{"message": "success top up deposit"})
 }
