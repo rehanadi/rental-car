@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"rental-car/helpers"
 	"rental-car/models"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
-	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +19,7 @@ var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 type UserRepository interface {
 	Register(user *models.RegisterRequest) (*models.RegisterResponse, int, error)
 	Login(user *models.LoginRequest) (interface{}, int, error)
-	GetUserProfile(userId int) (*models.UserProfile, int, error)
+	FindById(userId int) (*models.UserProfile, int, error)
 }
 
 type userRepository struct {
@@ -29,46 +28,6 @@ type userRepository struct {
 
 func NewUserRepository(DB *gorm.DB) *userRepository {
 	return &userRepository{DB}
-}
-
-func (r *userRepository) SendRegistrationEmail(email, name string) error {
-	// Email configuration - consider using environment variables
-	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", "noreply@yourcompany.com")
-	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "Welcome to Our Rental Car Service")
-
-	// Personalized email body
-	body := fmt.Sprintf(`
-		Dear %s,
-
-		Welcome to our Rental Car Service! We're excited to have you on board.
-
-		Your account has been successfully created. You can now log in and start exploring our services.
-
-		If you have any questions, please don't hesitate to contact our support team.
-
-		Best regards,
-		The Rental Car Team
-	`, name)
-
-	mailer.SetBody("text/plain", body)
-
-	// SMTP configuration - use environment variables for sensitive info
-	port, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
-	dialer := gomail.NewDialer(
-		os.Getenv("SMTP_HOST"),
-		port,
-		os.Getenv("SMTP_USERNAME"),
-		os.Getenv("SMTP_PASSWORD"),
-	)
-
-	// Send the email
-	if err := dialer.DialAndSend(mailer); err != nil {
-		return fmt.Errorf("failed to send registration email: %v", err)
-	}
-
-	return nil
 }
 
 func (r *userRepository) Register(user *models.RegisterRequest) (*models.RegisterResponse, int, error) {
@@ -101,9 +60,11 @@ func (r *userRepository) Register(user *models.RegisterRequest) (*models.Registe
 
 	// Send registration email
 	go func() {
-		if emailErr := r.SendRegistrationEmail(newUser.Email, newUser.Name); emailErr != nil {
+		if emailErr := helpers.SendRegistrationEmail(newUser.Email, newUser.Name); emailErr != nil {
 			fmt.Printf("Failed to send registration email: %v\n", emailErr)
 		}
+
+		fmt.Println("Registration email sent")
 	}()
 
 	// return response
@@ -144,7 +105,7 @@ func (r *userRepository) Login(user *models.LoginRequest) (interface{}, int, err
 	return tokenString, http.StatusOK, nil
 }
 
-func (r *userRepository) GetUserProfile(userId int) (*models.UserProfile, int, error) {
+func (r *userRepository) FindById(userId int) (*models.UserProfile, int, error) {
 	// check if user exists
 	var user models.User
 	if err := r.DB.Where("user_id = ?", userId).

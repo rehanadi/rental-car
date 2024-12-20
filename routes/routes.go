@@ -14,16 +14,31 @@ func Init(e *echo.Echo) {
 	userRepository := repositories.NewUserRepository(config.DB)
 	userController := controllers.NewUserController(userRepository)
 
+	paymentRepository := repositories.NewPaymentRepository(config.DB)
+	paymentController := controllers.NewPaymentController(paymentRepository)
+
+	categoryRepository := repositories.NewCategoryRepository(config.DB)
+	categoryController := controllers.NewCategoryController(categoryRepository)
+
+	carRepository := repositories.NewCarRepository(config.DB)
+	carController := controllers.NewCarController(carRepository)
+
 	u := e.Group("/users")
 	u.POST("/register", userController.Register)
 	u.POST("/login", userController.Login)
 	u.GET("/me", m.Authentication(userController.GetUserProfile))
 
-	// payment routes
-	paymentRepository := repositories.NewPaymentRepository(config.DB)
-	paymentController := controllers.NewPaymentController(paymentRepository)
-
 	p := e.Group("/payments")
 	p.POST("/top-up", m.Authentication(paymentController.TopUpDeposit))
 	p.GET("/verify/:id", paymentController.VerifyPayment)
+
+	c := e.Group("/categories")
+	c.Use(m.Authentication)
+	c.GET("", categoryController.GetAllCategories)
+
+	car := e.Group("/cars")
+	car.Use(m.Authentication)
+	car.GET("", carController.GetAllCars)
+	car.GET("/:id", carController.GetCarById)
+	car.GET("/category/:id", carController.GetCarsByCategoryId)
 }

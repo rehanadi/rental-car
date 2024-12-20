@@ -42,7 +42,7 @@ func (uc *UserController) Login(c echo.Context) error {
 func (uc *UserController) GetUserProfile(c echo.Context) error {
 	userId := c.Get("user_id").(int)
 
-	user, statusCode, err := uc.UserRepository.GetUserProfile(userId)
+	user, statusCode, err := uc.UserRepository.FindById(userId)
 	if err != nil {
 		return c.JSON(statusCode, map[string]string{"message": err.Error()})
 	}
