@@ -1,7 +1,7 @@
 -- Create users table
 CREATE TABLE users (
   user_id SERIAL PRIMARY KEY,
-  name VARCHAR(100),
+  name VARCHAR(100) NOT NULL,
   email VARCHAR(100) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
   deposit_amount DECIMAL(10, 2) DEFAULT 0.00
@@ -17,7 +17,7 @@ CREATE TABLE payment_methods (
 -- Create payments table
 CREATE TABLE payments (
   payment_id SERIAL PRIMARY KEY,
-  user_id INT REFERENCES users(user_id),
+  user_id INT NOT NULL REFERENCES users(user_id),
   amount DECIMAL(10, 2) NOT NULL,
   payment_method VARCHAR(100) NOT NULL REFERENCES payment_methods(code),
   status VARCHAR(100) DEFAULT 'pending',
@@ -35,7 +35,7 @@ CREATE TABLE categories (
 -- Create cars table
 CREATE TABLE cars (
   car_id SERIAL PRIMARY KEY,
-  category_id INT REFERENCES categories(category_id),
+  category_id INT NOT NULL REFERENCES categories(category_id),
   name VARCHAR(100) UNIQUE NOT NULL,
   description TEXT,
   rental_cost DECIMAL(10, 2) NOT NULL,
@@ -45,8 +45,8 @@ CREATE TABLE cars (
 -- Create rentals table
 CREATE TABLE rentals (
   rental_id SERIAL PRIMARY KEY,
-  user_id INT REFERENCES users(user_id),
-  car_id INT REFERENCES cars(car_id),
+  user_id INT NOT NULL REFERENCES users(user_id),
+  car_id INT NOT NULL REFERENCES cars(car_id),
   rental_cost DECIMAL(10, 2) NOT NULL,
   rental_days INT NOT NULL,
   subtotal_cost DECIMAL(10, 2) NOT NULL,
