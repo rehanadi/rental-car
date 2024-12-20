@@ -1,0 +1,445 @@
+openapi: "3.0.0"
+info:
+  title: "Rental Car API"
+  version: "1.0.0"
+  description: "API for rental car services"
+servers:
+  - url: "http://localhost:8080"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  
+  schemas:
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - name
+        - email
+        - password
+
+    RegisterResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    UserProfile:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        deposit_amount:
+          type: number
+          format: float
+
+    PaymentMethod:
+      type: object
+      properties:
+        payment_method_id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+
+    TopUpDepositRequest:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        amount:
+          type: number
+          format: float
+        payment_method:
+          type: string
+      required:
+        - user_id
+        - amount
+        - payment_method
+
+    TopUpDepositResponse:
+      type: object
+      properties:
+        payment_id:
+          type: integer
+        user_id:
+          type: integer
+        amount:
+          type: number
+          format: float
+        payment_method:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+        redirect_url:
+          type: string
+
+    Category:
+      type: object
+      properties:
+        category_id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+
+    CarResponse:
+      type: object
+      properties:
+        car_id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        rental_cost:
+          type: number
+          format: float
+        stock:
+          type: integer
+        category_id:
+          type: integer
+        category_name:
+          type: string
+
+    RentCarRequest:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        car_id:
+          type: integer
+        rental_days:
+          type: integer
+      required:
+        - user_id
+        - car_id
+        - rental_days
+
+    ReportRentalDetail:
+      type: object
+      properties:
+        rental_id:
+          type: integer
+        car_id:
+          type: integer
+        car_name:
+          type: string
+        rental_cost:
+          type: number
+          format: float
+        rental_days:
+          type: integer
+        subtotal_cost:
+          type: number
+          format: float
+        tax_cost:
+          type: number
+          format: float
+        total_cost:
+          type: number
+          format: float
+        status:
+          type: string
+        rented_at:
+          type: string
+          format: date-time
+        expired_at:
+          type: string
+          format: date-time
+        returned_at:
+          type: string
+          format: date-time
+
+    ReportRentalSummary:
+      type: object
+      properties:
+        total_car:
+          type: integer
+        total_rental:
+          type: integer
+        total_cost:
+          type: number
+          format: float
+
+paths:
+  /users/register:
+    post:
+      tags:
+        - Users
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+
+  /users/login:
+    post:
+      tags:
+        - Users
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: Get user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /payments/methods:
+    get:
+      tags:
+        - Payments
+      summary: Get all payment methods
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Payment methods retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethod'
+
+  /payments/top-up:
+    post:
+      tags:
+        - Payments
+      summary: Top up user deposit
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopUpDepositRequest'
+      responses:
+        '200':
+          description: Top up initiated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopUpDepositResponse'
+
+  /payments/verify/{id}:
+    get:
+      tags:
+        - Payments
+      summary: Verify payment status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Payment verified successfully
+
+  /categories:
+    get:
+      tags:
+        - Categories
+      summary: Get all categories
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+
+  /cars:
+    get:
+      tags:
+        - Cars
+      summary: Get all cars
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cars retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CarResponse'
+
+  /cars/{id}:
+    get:
+      tags:
+        - Cars
+      summary: Get car by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Car retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarResponse'
+
+  /cars/category/{id}:
+    get:
+      tags:
+        - Cars
+      summary: Get cars by category ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cars retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CarResponse'
+
+  /cars/rent:
+    post:
+      tags:
+        - Cars
+      summary: Rent a car
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentCarRequest'
+      responses:
+        '200':
+          description: Car rented successfully
+
+  /cars/return/{id}:
+    post:
+      tags:
+        - Cars
+      summary: Return a rented car
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Car returned successfully
+
+  /reports/rental/detail:
+    get:
+      tags:
+        - Reports
+      summary: Get rental detail report
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Report retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportRentalDetail'
+
+  /reports/rental/summary:
+    get:
+      tags:
+        - Reports
+      summary: Get rental summary report
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Report retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportRentalSummary'
