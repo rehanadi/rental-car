@@ -11,6 +11,10 @@ type CategoryRepository interface {
 	FindAll() ([]models.Category, int, error)
 }
 
+type CategoryMockRepository interface {
+	FindAll() *[]models.Category
+}
+
 type categoryRepository struct {
 	DB *gorm.DB
 }
