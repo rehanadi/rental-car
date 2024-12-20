@@ -122,7 +122,7 @@ func (r *rentalRepository) ReturnCar(rentalID int) (int, error) {
 
 		// check if user has enough deposit
 		if user.DepositAmount < totalCost {
-			return http.StatusBadRequest, errors.New("insufficient deposit Rp " + fmt.Sprintf("%.2f", user.DepositAmount) + " for total cost Rp " + fmt.Sprintf("%.2f", totalCost))
+			return http.StatusBadRequest, errors.New("insufficient deposit for pay penalty Rp " + fmt.Sprintf("%.2f", user.DepositAmount) + " for total cost Rp " + fmt.Sprintf("%.2f", totalCost))
 		}
 
 		// deduct user deposit

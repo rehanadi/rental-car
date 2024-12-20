@@ -7,12 +7,19 @@ CREATE TABLE users (
   deposit_amount DECIMAL(10, 2) DEFAULT 0.00
 );
 
+-- Create payment methods table
+CREATE TABLE payment_methods (
+  payment_method_id SERIAL PRIMARY KEY,
+  code VARCHAR(100) UNIQUE NOT NULL,
+  name VARCHAR(100) NOT NULL
+);
+
 -- Create payments table
 CREATE TABLE payments (
   payment_id SERIAL PRIMARY KEY,
   user_id INT REFERENCES users(user_id),
   amount DECIMAL(10, 2) NOT NULL,
-  payment_method VARCHAR(100) NOT NULL,
+  payment_method VARCHAR(100) NOT NULL REFERENCES payment_methods(code),
   status VARCHAR(100) DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -50,6 +57,12 @@ CREATE TABLE rentals (
   expired_at TIMESTAMP,
   returned_at TIMESTAMP
 );
+
+-- insert into payment_methods table
+INSERT INTO payment_methods (code, name) VALUES
+('OVO', 'OVO'),
+('DANA', 'DANA'),
+('SHOPEEPAY', 'ShopeePay');
 
 -- insert into categories table
 INSERT INTO categories (name, description) VALUES

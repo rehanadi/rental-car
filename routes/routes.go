@@ -35,6 +35,7 @@ func Init(e *echo.Echo) {
 	u.GET("/me", m.Authentication(userController.GetUserProfile))
 
 	p := e.Group("/payments")
+	p.GET("/methods", m.Authentication(paymentController.GetAllPaymentMethods))
 	p.POST("/top-up", m.Authentication(paymentController.TopUpDeposit))
 	p.GET("/verify/:id", paymentController.VerifyPayment)
 

@@ -17,6 +17,15 @@ func NewPaymentController(pr repositories.PaymentRepository) *PaymentController 
 	return &PaymentController{pr}
 }
 
+func (pc *PaymentController) GetAllPaymentMethods(c echo.Context) error {
+	paymentMethods, statusCode, err := pc.PaymentRepository.FindAllPaymentMethods()
+	if err != nil {
+		return c.JSON(statusCode, map[string]string{"message": err.Error()})
+	}
+
+	return c.JSON(statusCode, map[string]any{"payment_methods": paymentMethods})
+}
+
 func (pc *PaymentController) TopUpDeposit(c echo.Context) error {
 	var payment models.TopUpDepositRequest
 	c.Bind(&payment)

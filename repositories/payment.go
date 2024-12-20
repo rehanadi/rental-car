@@ -13,6 +13,7 @@ import (
 )
 
 type PaymentRepository interface {
+	FindAllPaymentMethods() ([]models.PaymentMethod, int, error)
 	TopUpDeposit(payment *models.TopUpDepositRequest) (*models.TopUpDepositResponse, int, error)
 	VerifyPayment(paymentId int, status string) (int, error)
 }
@@ -25,12 +26,28 @@ func NewPaymentRepository(DB *gorm.DB) *paymentRepository {
 	return &paymentRepository{DB}
 }
 
+func (r *paymentRepository) FindAllPaymentMethods() ([]models.PaymentMethod, int, error) {
+	var paymentMethods []models.PaymentMethod
+	if err := r.DB.Find(&paymentMethods).Error; err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	return paymentMethods, http.StatusOK, nil
+}
+
 func (r *paymentRepository) TopUpDeposit(newPayment *models.TopUpDepositRequest) (*models.TopUpDepositResponse, int, error) {
 	// check if user exists
 	var user models.User
 	if err := r.DB.Where("user_id = ?", newPayment.UserId).
 		First(&user).Error; err != nil {
-		return nil, http.StatusInternalServerError, err
+		return nil, http.StatusNotFound, errors.New("user not found")
+	}
+
+	// check if payment method exists
+	var paymentMethod models.PaymentMethod
+	if err := r.DB.Where("code = ?", newPayment.PaymentMethod).
+		First(&paymentMethod).Error; err != nil {
+		return nil, http.StatusNotFound, errors.New("payment method not found")
 	}
 
 	// insert into payments

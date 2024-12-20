@@ -10,6 +10,12 @@ type Payment struct {
 	UpdatedAt     string  `json:"updated_at"`
 }
 
+type PaymentMethod struct {
+	PaymentMethodId int    `json:"payment_method_id" gorm:"primaryKey"`
+	Code            string `json:"code"`
+	Name            string `json:"name"`
+}
+
 type TopUpDepositRequest struct {
 	UserId        int     `json:"user_id"`
 	Amount        float64 `json:"amount"`
