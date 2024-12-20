@@ -12,7 +12,13 @@ type Rental struct {
 	TaxCost      float64   `json:"tax_cost"`
 	TotalCost    float64   `json:"total_cost"`
 	Status       string    `json:"status"`
-	CreatedAt    time.Time `json:"created_at"`
+	RentedAt     time.Time `json:"rented_at"`
 	ExpiredAt    time.Time `json:"expired_at"`
 	ReturnedAt   time.Time `json:"returned_at"`
+}
+
+type RentCarRequest struct {
+	UserID     int `json:"user_id"`
+	CarID      int `json:"car_id"`
+	RentalDays int `json:"rental_days"`
 }

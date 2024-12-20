@@ -23,6 +23,9 @@ func Init(e *echo.Echo) {
 	carRepository := repositories.NewCarRepository(config.DB)
 	carController := controllers.NewCarController(carRepository)
 
+	rentalRepository := repositories.NewRentalRepository(config.DB)
+	rentalController := controllers.NewRentalController(rentalRepository)
+
 	u := e.Group("/users")
 	u.POST("/register", userController.Register)
 	u.POST("/login", userController.Login)
@@ -41,4 +44,6 @@ func Init(e *echo.Echo) {
 	car.GET("", carController.GetAllCars)
 	car.GET("/:id", carController.GetCarById)
 	car.GET("/category/:id", carController.GetCarsByCategoryId)
+	car.POST("/rent", rentalController.RentCar)
+	car.POST("/return/:id", rentalController.ReturnCar)
 }

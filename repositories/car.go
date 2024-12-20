@@ -9,9 +9,9 @@ import (
 )
 
 type CarRepository interface {
-	FindAll() ([]models.Car, int, error)
-	FindById(id int) (models.Car, int, error)
-	FindByCategoryId(categoryId int) ([]models.Car, int, error)
+	FindAll() ([]models.CarResponse, int, error)
+	FindById(id int) (models.CarResponse, int, error)
+	FindByCategoryId(categoryId int) ([]models.CarResponse, int, error)
 }
 
 type carRepository struct {
@@ -22,8 +22,8 @@ func NewCarRepository(DB *gorm.DB) *carRepository {
 	return &carRepository{DB}
 }
 
-func (r *carRepository) FindAll() ([]models.Car, int, error) {
-	var cars []models.Car
+func (r *carRepository) FindAll() ([]models.CarResponse, int, error) {
+	var cars []models.CarResponse
 	if err := r.DB.Table("cars").Select("cars.*, categories.name as category_name").Joins("left join categories on cars.category_id = categories.category_id").Find(&cars).Error; err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -31,8 +31,8 @@ func (r *carRepository) FindAll() ([]models.Car, int, error) {
 	return cars, http.StatusOK, nil
 }
 
-func (r *carRepository) FindById(id int) (models.Car, int, error) {
-	var car models.Car
+func (r *carRepository) FindById(id int) (models.CarResponse, int, error) {
+	var car models.CarResponse
 	if err := r.DB.Table("cars").Select("cars.*, categories.name as category_name").Joins("left join categories on cars.category_id = categories.category_id").Where("car_id = ?", id).First(&car).Error; err != nil {
 		return car, http.StatusNotFound, errors.New("car not found")
 	}
@@ -40,8 +40,8 @@ func (r *carRepository) FindById(id int) (models.Car, int, error) {
 	return car, http.StatusOK, nil
 }
 
-func (r *carRepository) FindByCategoryId(categoryId int) ([]models.Car, int, error) {
-	var cars []models.Car
+func (r *carRepository) FindByCategoryId(categoryId int) ([]models.CarResponse, int, error) {
+	var cars []models.CarResponse
 	if err := r.DB.Table("cars").Select("cars.*, categories.name as category_name").Joins("left join categories on cars.category_id = categories.category_id").Where("cars.category_id = ?", categoryId).Find(&cars).Error; err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
