@@ -14,6 +14,10 @@ type CarRepository interface {
 	FindByCategoryId(categoryId int) ([]models.CarResponse, int, error)
 }
 
+type CarMockRepository interface {
+	FindById(id int) *models.Car
+}
+
 type carRepository struct {
 	DB *gorm.DB
 }

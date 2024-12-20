@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
+	"rental-car/models"
 	"rental-car/repositories"
 	"strconv"
 
@@ -10,6 +12,10 @@ import (
 
 type CarController struct {
 	CarRepository repositories.CarRepository
+}
+
+type CarMockController struct {
+	CarRepository repositories.CarMockRepository
 }
 
 func NewCarController(cr repositories.CarRepository) *CarController {
@@ -53,4 +59,14 @@ func (cc *CarController) GetCarsByCategoryId(c echo.Context) error {
 	}
 
 	return c.JSON(statusCode, map[string]any{"message": "success get cars by category id", "cars": cars})
+}
+
+func (cmc CarMockController) FindById(id int) (*models.Car, error) {
+	car := cmc.CarRepository.FindById(id)
+
+	if car == nil {
+		return nil, errors.New("car not found")
+	}
+
+	return car, nil
 }
