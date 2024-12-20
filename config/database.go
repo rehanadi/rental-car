@@ -30,7 +30,7 @@ func InitDB() {
 
 	// dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", dbhost, dbuser, dbpass, dbname, dbport)
 
-	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=require&PreferSimpleProtocol=true", dbuser, dbpass, dbhost, dbport, dbname)
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=require&PreferSimpleProtocol=true&statement_cache_mode=describe", dbuser, dbpass, dbhost, dbport, dbname)
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -46,7 +46,8 @@ func InitDB() {
 	sqlDB, err := DB.DB()
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(50)
-	sqlDB.SetConnMaxLifetime(5 * time.Minute)
+	sqlDB.SetConnMaxIdleTime(5 * time.Minute)
+	sqlDB.SetConnMaxLifetime(30 * time.Minute)
 
 	if err != nil {
 		log.Fatal(err)
@@ -56,11 +57,18 @@ func InitDB() {
 }
 
 func CloseDB() {
-	db, err := DB.DB()
-	if err != nil {
-		log.Fatal(err)
-	}
+	if DB != nil {
+		db, err := DB.DB()
+		if err != nil {
+			log.Printf("Error getting DB instance: %v", err)
+			return
+		}
 
-	db.Close()
-	log.Println("Connection to database closed")
+		if err := db.Close(); err != nil {
+			log.Printf("Error closing DB: %v", err)
+			return
+		}
+
+		log.Println("Connection to database closed")
+	}
 }
