@@ -28,9 +28,9 @@ func InitDB() {
 		dbport := "6543"
 	*/
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", dbhost, dbuser, dbpass, dbname, dbport)
+	// dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", dbhost, dbuser, dbpass, dbname, dbport)
 
-	// dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=require&PreferSimpleProtocol=true", dbuser, dbpass, dbhost, dbport, dbname)
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=require&PreferSimpleProtocol=true", dbuser, dbpass, dbhost, dbport, dbname)
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
